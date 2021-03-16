@@ -1,0 +1,121 @@
+resource_types:
+- name: semver
+  type: registry-image
+  source:
+    repository: concourse/semver-resource
+
+
+resources:
+  - name: repository
+    type: git
+    source:
+      uri: https://((github-token))@github.com/cirocosta/slirunner
+      ignore_paths: [ ./VERSION ]
+
+  - name: rc-image
+    type: registry-image
+    source:
+      repository: cirocosta/slirunner
+      tag: rc
+      username: ((docker-user))
+      password: ((docker-password))
+
+  - name: final-image
+    type: registry-image
+    source:
+      repository: cirocosta/slirunner
+      username: ((docker-user))
+      password: ((docker-password))
+
+  - name: version
+    type: semver
+    source:
+      driver: git
+      uri: https://((github-token))@github.com/cirocosta/slirunner
+      branch: master
+      file: ./VERSION
+      git_user: Ciro S. Costa <cscosta@pivotal.io>
+
+  - name: gh-release
+    type: github-release
+    source:
+      owner: cirocosta
+      repository: slirunner
+      access_token: ((github-token))
+
+
+
+jobs:
+  - name: build
+    public: true
+    plan:
+      - in_parallel:
+        - {get: repository, trigger: true}
+        - {get: version}
+      - in_parallel:
+          fail_fast: true
+          steps:
+            - task: build-image
+              privileged: true
+              params: {TARGET: "release"}
+              file: repository/ci/tasks/build.yml
+            - task: test
+              privileged: true
+              output_mapping: { image: discard }
+              params: {TARGET: "test"}
+              file: repository/ci/tasks/build.yml
+      - put: rc-image
+        inputs: [image, version]
+        get_params: {format: oci}
+        params:
+          image: image/image.tar
+
+
+  - name: publish
+    public: true
+    plan:
+      - in_parallel:
+        - get: rc-image
+          passed: [build]
+        - get: rc-image-oci
+          resource: rc-image
+          params: {format: oci}
+          passed: [build]
+        - get: version
+          passed: [build]
+        - get: repository
+          passed: [build]
+      - task: prepare-release
+        image: rc-image
+        config:
+          platform: linux
+          inputs:
+            - name: version
+          outputs:
+            - name: out
+          run:
+            path: /bin/sh
+            args:
+              - -cex
+              - |
+                tar cvzf out/slirunner.tgz -C /usr/local/bin fly slirunner
+                echo "$(cat version/version)" > out/additional_tags
+      - in_parallel:
+        - put: gh-release
+          inputs: [version, out, repository]
+          params:
+            body: ./version/version
+            commitish: repository/.git/ref
+            globs: [./out/*.tgz]
+            name: ./version/version
+            tag: ./version/version
+            tag_prefix: v
+        - put: final-image
+          inputs: [rc-image-oci, out]
+          get_params: {format: oci}
+          params:
+            image: rc-image-oci/image.tar
+            additional_tags: out/additional_tags
+        - put: version
+          params:
+            bump: patch
