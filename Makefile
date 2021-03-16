@@ -5,4 +5,4 @@ test:
 	go test -v ./...
 
 image:
-	docker build -t cirocosta/slirunner .
+	docker build -t kalexiwells/slirunner:1.0.9 .

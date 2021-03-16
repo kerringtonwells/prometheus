@@ -5,6 +5,8 @@ resources:
 - name: time-trigger
   type: time
   source: {interval: 24h}
+  tags:
+  - cic_workers
 
 jobs:
 - name: simple-job
@@ -21,6 +23,8 @@ jobs:
       run:
         path: echo
         args: ["Hello, world!"]
+    tags:
+    - cic_workers
 
 - name: failing
   build_logs_to_retain: 20
@@ -34,6 +38,8 @@ jobs:
         source: {repository: busybox}
       run:
         path: /bin/false
+    tags:
+    - cic_workers
 
 - name: auto-triggering
   build_logs_to_retain: 20
@@ -41,5 +47,7 @@ jobs:
   plan:
   - get: time-trigger
     trigger: true
+    tags:
+    - cic_workers
   - *say-hello
 `
