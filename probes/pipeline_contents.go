@@ -48,6 +48,6 @@ jobs:
   - get: time-trigger
     trigger: true
     tags:
-    - cic_workers
+    - ` + workerpool + ` 
   - *say-hello
 `

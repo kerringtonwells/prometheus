@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func NewLogin(target, username, password, concourseUrl string, insecureTls bool, ldapAuth bool, ldapTeam string) runnable.Runnable {
+func NewLogin(target, username, password, concourseUrl string, insecureTls bool, ldapAuth bool, ldapTeam string, workerpool string) runnable.Runnable {
 	var (
 		config = Config{
 			Target:       target,
@@ -16,6 +16,7 @@ func NewLogin(target, username, password, concourseUrl string, insecureTls bool,
 			InsecureTls:  insecureTls,
 			LdapAuth:     ldapAuth,
 			LdapTeam:     ldapTeam,
+			WorkerPool:   workerpool,
 		}
 		timeout = 60 * time.Second
 	)
@@ -196,13 +197,14 @@ func NewRunExistingPipeline(target, prefix string) runnable.Runnable {
 	)
 }
 
-func NewAll(target, username, password, concourseUrl, prefix string, insecureTls bool, ldapAuth bool, ldapTeam string) runnable.Runnable {
+func NewAll(target, username, password, concourseUrl, prefix string, insecureTls bool, ldapAuth bool, ldapTeam string, workerpool string) runnable.Runnable {
     if ldapAuth && len(ldapTeam) == 0 {
+			  // Assigning ldapTeam to a default team if none is given
         ldapTeam = "concourse-monitoring"
     }
 	return runnable.NewSequentially([]runnable.Runnable{
 
-		NewLogin(target, username, password, concourseUrl, insecureTls, ldapAuth, ldapTeam),
+		NewLogin(target, username, password, concourseUrl, insecureTls, ldapAuth, ldapTeam, workerpool),
 		NewSync(target),
 
 		runnable.NewConcurrently([]runnable.Runnable{

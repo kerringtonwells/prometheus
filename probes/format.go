@@ -13,6 +13,7 @@ type Config struct {
 
 	LdapAuth bool
 	LdapTeam string
+	WorkerPool string
 
 	ConcourseUrl string
 	InsecureTls  bool

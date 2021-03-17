@@ -21,6 +21,7 @@ type onceCommand struct {
 
 	LdapAuth bool   `long:"ldapauth"      short:"l" required:"false" description:"LDAP boolean if using ldap auth"`
 	LdapTeam string `long:"ldapteam"      short:"m" required:"false" description:"LDAP team if using ldap auth"`
+	WorkerPool string `long:"workerpool"      short:"w" required:"true" description:"worker pool for concourse pipelines"`
 }
 
 func (c *onceCommand) Execute(args []string) (err error) {
@@ -39,6 +40,7 @@ func (c *onceCommand) Execute(args []string) (err error) {
 		c.PipelinesPrefix,
 		c.InsecureTls,
 		c.LdapAuth, c.LdapTeam,
+		c.WorkerPool,
 	).Run(ctx)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, err.Error())

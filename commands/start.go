@@ -24,7 +24,7 @@ type startCommand struct {
 
 	LdapAuth bool   `long:"ldapauth"      short:"l" required:"false" description:"LDAP boolean if using ldap auth"`
 	LdapTeam string `long:"ldapteam"      short:"m" required:"false" description:"LDAP team if using ldap auth"`
-
+	WorkerPool string `long:"workerpool"      short:"w" required:"true" description:"worker pool for concourse pipelines"`
 	Prometheus exporter.Exporter `group:"Prometheus configuration"`
 }
 
@@ -37,6 +37,7 @@ func (c *startCommand) Execute(args []string) (err error) {
 			c.PipelinesPrefix,
 			c.InsecureTls,
 			c.LdapAuth, c.LdapTeam,
+			c.WorkerPool,
 		)
 		ticker = time.NewTicker(c.Interval)
 	)
