@@ -93,7 +93,7 @@ func NewSync(target string) runnable.Runnable {
 	)
 }
 
-func NewCreateAndRunNewPipeline(target, prefix string) runnable.Runnable {
+func NewCreateAndRunNewPipeline(target, prefix string, pipelineContentsWorker string) runnable.Runnable {
 	var (
 		config = Config{
 			Target:   target,
@@ -111,7 +111,7 @@ func NewCreateAndRunNewPipeline(target, prefix string) runnable.Runnable {
 	set -o xtrace
 
 	fly -t {{ .Target }} destroy-pipeline -n -p {{ .Pipeline }} || true
-	fly -t {{ .Target }} set-pipeline -n -p {{ .Pipeline }} -c <(echo '`+pipelineContents+`')
+	fly -t {{ .Target }} set-pipeline -n -p {{ .Pipeline }} -c <(echo '`+pipelineContentsWorker+`')
 	fly -t {{ .Target }} unpause-pipeline -p {{ .Pipeline }}
 
 	wait_for_build () {
@@ -135,7 +135,7 @@ func NewCreateAndRunNewPipeline(target, prefix string) runnable.Runnable {
 	)
 }
 
-func NewHijackFailingBuild(target, prefix string) runnable.Runnable {
+func NewHijackFailingBuild(target, prefix string, pipelineContentsWorker string) runnable.Runnable {
 	var (
 		config = Config{
 			Target:   target,
@@ -152,7 +152,7 @@ func NewHijackFailingBuild(target, prefix string) runnable.Runnable {
 	set -o errexit
 	set -o xtrace
 
-	fly -t {{ .Target }} set-pipeline -n -p {{ .Pipeline }} -c <(echo '`+pipelineContents+`')
+	fly -t {{ .Target }} set-pipeline -n -p {{ .Pipeline }} -c <(echo '`+pipelineContentsWorker+`')
 	fly -t {{ .Target }} unpause-pipeline -p {{ .Pipeline }}
 
 	job_name={{ .Pipeline }}/failing
@@ -168,7 +168,7 @@ func NewHijackFailingBuild(target, prefix string) runnable.Runnable {
 	)
 }
 
-func NewRunExistingPipeline(target, prefix string) runnable.Runnable {
+func NewRunExistingPipeline(target, prefix string, pipelineContentsWorker string) runnable.Runnable {
 	var (
 		config = Config{
 			Target:   target,
@@ -185,7 +185,7 @@ func NewRunExistingPipeline(target, prefix string) runnable.Runnable {
 	set -o xtrace
 	set -o errexit
 
-	fly -t {{ .Target }} set-pipeline -n -p {{ .Pipeline }} -c <(echo '`+pipelineContents+`')
+	fly -t {{ .Target }} set-pipeline -n -p {{ .Pipeline }} -c <(echo '`+pipelineContentsWorker+`')
 	fly -t {{ .Target }} unpause-pipeline -p {{ .Pipeline }}
 
 	fly -t {{ .Target }} trigger-job -w -j "{{ .Pipeline }}/simple-job"
@@ -202,15 +202,65 @@ func NewAll(target, username, password, concourseUrl, prefix string, insecureTls
 			  // Assigning ldapTeam to a default team if none is given
         ldapTeam = "concourse-monitoring"
     }
-	return runnable.NewSequentially([]runnable.Runnable{
 
+		pipelineContentsWorker := `
+resources:
+- name: time-trigger
+  type: time
+  source: {interval: 24h}
+  tags:
+  - `+workerpool+`
+jobs:
+- name: simple-job
+  build_logs_to_retain: 20
+  public: true
+  plan:
+  - &say-hello
+    task: say-hello
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: busybox}
+      run:
+        path: echo
+        args: ["Hello, world!"]
+    tags:
+    - `+workerpool+`
+- name: failing
+  build_logs_to_retain: 20
+  public: true
+  plan:
+  - task: fail
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source: {repository: busybox}
+      run:
+        path: /bin/false
+    tags:
+    - `+workerpool+`
+- name: auto-triggering
+  build_logs_to_retain: 20
+  public: true
+  plan:
+  - get: time-trigger
+    trigger: true
+    tags:
+    - `+workerpool+`
+  - *say-hello
+`
+
+
+	return runnable.NewSequentially([]runnable.Runnable{
 		NewLogin(target, username, password, concourseUrl, insecureTls, ldapAuth, ldapTeam, workerpool),
 		NewSync(target),
 
 		runnable.NewConcurrently([]runnable.Runnable{
-			NewCreateAndRunNewPipeline(target, prefix),
-			NewHijackFailingBuild(target, prefix),
-			NewRunExistingPipeline(target, prefix),
+			NewCreateAndRunNewPipeline(target, prefix, pipelineContentsWorker),
+			NewHijackFailingBuild(target, prefix, pipelineContentsWorker),
+			NewRunExistingPipeline(target, prefix, pipelineContentsWorker),
 		}),
 	})
 

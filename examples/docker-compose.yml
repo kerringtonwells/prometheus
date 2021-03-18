@@ -27,6 +27,7 @@ services:
       - --concourse-url=http://web:8080
       - --password=test
       - --username=test
+      - --workerpool=test
   prometheus:
     image: prom/prometheus
     entrypoint:

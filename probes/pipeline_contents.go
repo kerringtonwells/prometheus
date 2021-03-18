@@ -6,7 +6,7 @@ resources:
   type: time
   source: {interval: 24h}
   tags:
-  - cic_workers
+  - ((workerpool_name))
 
 jobs:
 - name: simple-job
@@ -24,7 +24,7 @@ jobs:
         path: echo
         args: ["Hello, world!"]
     tags:
-    - cic_workers
+    - ((workerpool_name))
 
 - name: failing
   build_logs_to_retain: 20
@@ -39,7 +39,7 @@ jobs:
       run:
         path: /bin/false
     tags:
-    - cic_workers
+    - ((workerpool_name))
 
 - name: auto-triggering
   build_logs_to_retain: 20
@@ -48,6 +48,6 @@ jobs:
   - get: time-trigger
     trigger: true
     tags:
-    - ` + workerpool + ` 
+    - ((workpool_name))
   - *say-hello
 `
