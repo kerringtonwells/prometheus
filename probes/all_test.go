@@ -1,7 +1,7 @@
 package probes_test
 
 import (
-	"github.com/cirocosta/slirunner/probes"
+	"github.com/kerringtonwells/slirunner/probes"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

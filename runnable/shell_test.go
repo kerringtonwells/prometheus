@@ -4,9 +4,7 @@ import (
 	"bytes"
 	"context"
 	"time"
-
-	"github.com/cirocosta/slirunner/runnable"
-
+	"github.com/kerringtonwells/slirunner/runnable"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

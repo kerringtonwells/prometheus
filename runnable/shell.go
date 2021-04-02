@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
-
 	"github.com/pkg/errors"
 )
 
@@ -13,7 +12,9 @@ import (
 //
 type ShellCommand struct {
 	command string
+	concourseUrl string
 	stderr  io.Writer
+	stdout  io.Writer
 }
 
 var _ Runnable = &ShellCommand{}
@@ -26,7 +27,7 @@ func NewShellCommand(command string, stderr io.Writer) (runnable *ShellCommand) 
 		command: command,
 		stderr:  stderr,
 	}
-
+	fmt.Println(command)
 	return
 }
 
@@ -38,14 +39,18 @@ func (r *ShellCommand) Run(ctx context.Context) (err error) {
 
 	cmd := exec.CommandContext(ctx, "/bin/bash", "-c", r.command)
 	output, err = cmd.CombinedOutput()
-
+	//fmt.Println("=======Command output for each function =======")
+	//fmt.Println(string(output))
+  //fmt.Println("=======Command output for each function =======")
 	switch ctx.Err() {
 	case context.DeadlineExceeded:
 		err = errors.Wrapf(ctx.Err(),
 			"command didn't finish on time")
+		//fmt.Fprintf(r.stderr, "COMMAND FAILURE--- \n%s\n", output)
 	case context.Canceled:
 		err = errors.Wrapf(ctx.Err(),
 			"command execution cancelled")
+		//fmt.Fprintf(r.stderr, "COMMAND FAILURE--- \n%s\n", output)
 	}
 
 	if err != nil {
@@ -54,6 +59,10 @@ func (r *ShellCommand) Run(ctx context.Context) (err error) {
 		fmt.Fprintf(r.stderr, "COMMAND FAILURE--- \n%s\n", output)
 		return
 	}
-
+	// fmt.Println("==================================================")
+	// fmt.Println("concourse Variable t = ", reflect.TypeOf(singleConcourseUrl[i]))
+	// fmt.Println("concourseUrl")
+  // fmt.Println(string(singleConcourseUrl[i]))
+	// fmt.Println("==================================================")
 	return
 }

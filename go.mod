@@ -1,4 +1,4 @@
-module github.com/cirocosta/slirunner
+module github.com/kerringtonwells/slirunner
 
 go 1.12
 

@@ -10,14 +10,12 @@ import (
 type Config struct {
 	Username string
 	Password string
-
 	LdapAuth bool
 	LdapTeam string
 	WorkerPool string
-
+	Harbor_url string
 	ConcourseUrl string
 	InsecureTls  bool
-
 	Target           string
 	ExistingPipeline string
 	Pipeline         string

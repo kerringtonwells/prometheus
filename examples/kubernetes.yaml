@@ -67,7 +67,7 @@ spec:
     spec:
       containers:
         - name: slirunner
-          image: "cirocosta/slirunner:latest"
+          image: "kerringtonwells/slirunner:latest"
           imagePullPolicy: Always
           env:
             - name: SR_USERNAME
@@ -84,7 +84,8 @@ spec:
             - slirunner
             - start
             - --target=target
-            - --concourse-url=https://hush-house.pivotal.io
+            - --concourse-url=https://hush-house.pivotal.io https://hush-house.pivotal.io
+            - --debug=true
           ports:
             - name: http
               containerPort: 9001

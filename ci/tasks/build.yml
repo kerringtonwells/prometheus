@@ -6,7 +6,7 @@ image_resource:
   source: {repository: concourse/builder-task}
 
 params:
-  REPOSITORY: cirocosta/slirunner
+  REPOSITORY: kerringtonwells/slirunner
   TAG: latest
   CONTEXT: repository
 

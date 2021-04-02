@@ -9,13 +9,13 @@ resources:
   - name: repository
     type: git
     source:
-      uri: https://((github-token))@github.com/cirocosta/slirunner
+      uri: https://((github-token))@github.com/kerringtonwells/slirunner
       ignore_paths: [ ./VERSION ]
 
   - name: rc-image
     type: registry-image
     source:
-      repository: cirocosta/slirunner
+      repository: kerringtonwells/slirunner
       tag: rc
       username: ((docker-user))
       password: ((docker-password))
@@ -23,7 +23,7 @@ resources:
   - name: final-image
     type: registry-image
     source:
-      repository: cirocosta/slirunner
+      repository: kerringtonwells/slirunner
       username: ((docker-user))
       password: ((docker-password))
 
@@ -31,15 +31,15 @@ resources:
     type: semver
     source:
       driver: git
-      uri: https://((github-token))@github.com/cirocosta/slirunner
+      uri: https://((github-token))@github.com/kerringtonwells/slirunner
       branch: master
       file: ./VERSION
-      git_user: Ciro S. Costa <cscosta@pivotal.io>
+      git_user: kerringtonwells <kerrington.wells@altoros.com>
 
   - name: gh-release
     type: github-release
     source:
-      owner: cirocosta
+      owner: kerringtonwells
       repository: slirunner
       access_token: ((github-token))
 

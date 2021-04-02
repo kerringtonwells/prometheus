@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"os"
 	"time"
-
 	"code.cloudfoundry.org/lager"
 	"code.cloudfoundry.org/lager/lagerctx"
-	"github.com/cirocosta/slirunner/exporter"
-	"github.com/cirocosta/slirunner/probes"
+	"github.com/kerringtonwells/slirunner/exporter"
+	"github.com/kerringtonwells/slirunner/probes"
+	"strings"
 )
 
 type startCommand struct {
@@ -25,22 +25,43 @@ type startCommand struct {
 	LdapAuth bool   `long:"ldapauth"      short:"l" required:"false" description:"LDAP boolean if using ldap auth"`
 	LdapTeam string `long:"ldapteam"      short:"m" required:"false" description:"LDAP team if using ldap auth"`
 	WorkerPool string `long:"workerpool"      short:"w" required:"true" description:"worker pool for concourse pipelines"`
+	Harbor_url string `long:"harbor_url"      short:"r" required:"true" description:"repository url"`
 	Prometheus exporter.Exporter `group:"Prometheus configuration"`
+	Debug string `long:"debug"      short:"d" required:"true" description:"debug"`
 }
-
+//This is the first thin that gets run. Its goes into all.go and uses probes.NewAll too get allProbes
 func (c *startCommand) Execute(args []string) (err error) {
+	var logs string
+	if strings.Contains(c.Debug, "true") {
+	    logs = "set -o xtrace"
+	}else {
+      logs = ""
+	}
+
+	singleConcourseUrl := strings.Split(c.ConcourseUrl, " ")
+	singleTarget := strings.Split(c.Target, " ")
+	singleWorkerPool := strings.Split(c.WorkerPool, " ")
+  fmt.Println(singleConcourseUrl)
+	//for i := range singleConcourseUrl {
 	var (
+		// Passing the variables from the struct above to the NewAll function in all.go
 		allProbes = probes.NewAll(
-			c.Target,
-			c.Username, c.Password,
-			c.ConcourseUrl,
+			singleTarget,
+			c.Username,
+			c.Password,
+			singleConcourseUrl,
 			c.PipelinesPrefix,
 			c.InsecureTls,
-			c.LdapAuth, c.LdapTeam,
-			c.WorkerPool,
+			c.LdapAuth,
+			c.LdapTeam,
+			singleWorkerPool,
+			c.Harbor_url,
+			logs,
+			//logs,
 		)
 		ticker = time.NewTicker(c.Interval)
 	)
+	//}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	go onTerminationSignal(func() {
@@ -73,6 +94,4 @@ func (c *startCommand) Execute(args []string) (err error) {
 			return
 		}
 	}
-
-	return
 }

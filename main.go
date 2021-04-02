@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/cirocosta/slirunner/commands"
+	"github.com/kerringtonwells/slirunner/commands"
 	"github.com/jessevdk/go-flags"
 	"github.com/vito/twentythousandtonnesofcrudeoil"
 )

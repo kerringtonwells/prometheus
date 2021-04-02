@@ -20,7 +20,7 @@
   "links": [],
   "panels": [
     {
-      "content": "Service Level Indicators (SLIs) as scraped by Prometheus from [slirunner](https://github.com/cirocosta/slirunner).\n\n\n\n",
+      "content": "Service Level Indicators (SLIs) as scraped by Prometheus from [slirunner](https://github.com/kerringtonwells/slirunner).\n\n\n\n",
       "datasource": null,
       "gridPos": {
         "h": 2,

@@ -19,15 +19,18 @@ services:
     ports:
       - '3000:3000'
   slirunner:
-    image: cirocosta/slirunner
+    image: kerringtonwells/slirunner
     container_name: 'slirunner'
     command:
       - start
       - --target=test
-      - --concourse-url=http://web:8080
+      - --concourse-url=http://web:8080 http://web:8081
       - --password=test
       - --username=test
       - --workerpool=test
+      - --harbor_url=https://hub.docker.com/_
+      - --debug=true
+
   prometheus:
     image: prom/prometheus
     entrypoint:

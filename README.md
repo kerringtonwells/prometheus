@@ -1,11 +1,11 @@
 # sli runner
 
-> probes your [Concourse][concourse] installation, generating 
+> probes your [Concourse][concourse] installation, generating
 > [Service Level Indicators][slis] (SLIs)
 
 ![sample dashboard](https://user-images.githubusercontent.com/3574444/59943990-a8559480-9431-11e9-8a0e-0ffefa157cce.png)
 
-[concourse]: https://concourse-ci.org 
+[concourse]: https://concourse-ci.org
 [slis]: https://landing.google.com/sre/sre-book/chapters/service-level-objectives/
 
 ## why
@@ -70,13 +70,13 @@ Available commands:
 The binary can either be built using `go`:
 
 ```console
-$ go get -u github.com/cirocosta/slirunner
+$ go get -u github.com/kerringtonwells/slirunner
 ```
 
 or fetched from the releases page:
 
 ```console
-$ curl -SL https://github.com/cirocosta/slirunner/releases/download/v0.1.0/slirunner.tgz | tar xvzf -
+$ curl -SL https://github.com/kerringtonwells/slirunner/releases/download/v0.1.0/slirunner.tgz | tar xvzf -
 fly slirunner
 ```
 
@@ -92,8 +92,8 @@ slirunner start \
 
 ### using docker / kubernetes
 
-A container image `cirocosta/slirunner` is continuously pushed to
-https://hub.docker.com/r/cirocosta/slirunner.
+A container image `kerringtonwells/slirunner` is continuously pushed to
+https://hub.docker.com/r/kerringtonwells/slirunner.
 
 e.g., using `docker-compose`:
 
@@ -101,7 +101,7 @@ e.g., using `docker-compose`:
 version: '3'
 services:
   slirunner:
-    image: cirocosta/slirunner
+    image: kerringtonwells/slirunner
     command:
       - start
       - --target=test
