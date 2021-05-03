@@ -27,7 +27,6 @@ func NewShellCommand(command string, stderr io.Writer) (runnable *ShellCommand) 
 		command: command,
 		stderr:  stderr,
 	}
-	fmt.Println(command)
 	return
 }
 
@@ -46,23 +45,18 @@ func (r *ShellCommand) Run(ctx context.Context) (err error) {
 	case context.DeadlineExceeded:
 		err = errors.Wrapf(ctx.Err(),
 			"command didn't finish on time")
-		//fmt.Fprintf(r.stderr, "COMMAND FAILURE--- \n%s\n", output)
+		 fmt.Fprintf(r.stderr, "COMMAND DIDN'T FINISH IN TIME --- \n%s\n", output)
 	case context.Canceled:
 		err = errors.Wrapf(ctx.Err(),
 			"command execution cancelled")
-		//fmt.Fprintf(r.stderr, "COMMAND FAILURE--- \n%s\n", output)
+		  fmt.Fprintf(r.stderr, "COMMAND EXECUTION WAS CANCELLED --- \n%s\n", output)
 	}
 
 	if err != nil {
 		err = errors.Wrapf(err,
 			"command execution failed")
-		fmt.Fprintf(r.stderr, "COMMAND FAILURE--- \n%s\n", output)
+		  fmt.Fprintf(r.stderr, "COMMAND FAILURE--- \n%s\n", output)
 		return
 	}
-	// fmt.Println("==================================================")
-	// fmt.Println("concourse Variable t = ", reflect.TypeOf(singleConcourseUrl[i]))
-	// fmt.Println("concourseUrl")
-  // fmt.Println(string(singleConcourseUrl[i]))
-	// fmt.Println("==================================================")
 	return
 }

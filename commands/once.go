@@ -34,9 +34,11 @@ func (c *onceCommand) Execute(args []string) (err error) {
       logs = ""
 	}
 
-  singleConcourseUrl := strings.Split(c.ConcourseUrl, " ")
-	singleTarget := strings.Split(c.Target, " ")
-	singleWorkerPool := strings.Split(c.WorkerPool, " ")
+  //singleConcourseUrl := strings.Split(c.ConcourseUrl, " ")
+	//singleTarget := strings.Split(c.Target, " ")
+	//singleWorkerPool := strings.Split(c.WorkerPool, " ")
+	//counter := 0
+	//var stringCounter string
   //for i := range singleConcourseUrl {
 	ctx, cancel := context.WithCancel(context.Background())
 	go onTerminationSignal(cancel)
@@ -45,13 +47,13 @@ func (c *onceCommand) Execute(args []string) (err error) {
 
 	ctx = lagerctx.NewContext(ctx, logger)
 		err = probes.NewAll(
-			singleTarget,
+			c.Target,
 			c.Username, c.Password,
-			singleConcourseUrl,
+			c.ConcourseUrl,
 			c.PipelinesPrefix,
 			c.InsecureTls,
 			c.LdapAuth, c.LdapTeam,
-			singleWorkerPool,
+			c.WorkerPool,
 			c.Harbor_url,
 			logs,
 			//logs,
@@ -59,6 +61,6 @@ func (c *onceCommand) Execute(args []string) (err error) {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, err.Error())
 			os.Exit(1)
-		}
-  return
+    }
+	return
 }

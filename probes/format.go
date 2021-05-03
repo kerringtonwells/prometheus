@@ -3,6 +3,7 @@ package probes
 import (
 	"bytes"
 	"text/template"
+	"fmt"
 
 	"github.com/pkg/errors"
 )
@@ -22,6 +23,8 @@ type Config struct {
 }
 
 func FormatProbe(formatting string, c Config) (res string) {
+	fmt.Println("FormatProbe")
+	fmt.Println(formatting)
 	var buf = new(bytes.Buffer)
 
 	tmpl, err := template.New("").Parse(formatting)

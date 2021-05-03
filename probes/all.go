@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func NewLogin(target string, username string, password string, concourseUrl string, insecureTls bool, ldapAuth bool, ldapTeam string, workerpool string) runnable.Runnable {
+func NewLogin(target string, username string, password string, concourseUrl string, insecureTls bool, ldapAuth bool, ldapTeam string, workerpool string, logs string) runnable.Runnable {
 	var (
 		config = Config{
 			Target:       target,
@@ -18,7 +18,7 @@ func NewLogin(target string, username string, password string, concourseUrl stri
 			LdapTeam:     ldapTeam,
 			WorkerPool:   workerpool,
 		}
-		timeout = 60 * time.Second
+		timeout = 120 * time.Second
 	)
 
 	var loginCommand string
@@ -95,7 +95,7 @@ func NewCreateAndRunNewPipeline(target, prefix string, pipelineContentsWorker st
 			Target:   target,
 			Pipeline: prefix + "create-and-run-new-pipeline",
 		}
-		timeout = 180 * time.Second
+		timeout = 120 * time.Second
 	)
 	return runnable.NewWithLogging("create-and-run-new-pipeline",
 		runnable.NewWithMetrics("create-and-run-new-pipeline",
@@ -105,13 +105,13 @@ func NewCreateAndRunNewPipeline(target, prefix string, pipelineContentsWorker st
 set -o errexit
 `+logs+`
 
-echo "Printing the log level and the target"
+echo "Printing the log level, counter and the target"
+echo `+logs+`
 echo `+target+`
 echo "====================="
 echo "Yaml with workerpool"
 echo '`+ pipelineContentsWorker +`'
 echo "====================="
-
 fly -t {{ .Target }} destroy-pipeline -n -p {{ .Pipeline }} || true
 fly -t {{ .Target }} set-pipeline -n -p {{ .Pipeline }} -c <(echo '`+pipelineContentsWorker+`')
 fly -t {{ .Target }} unpause-pipeline -p {{ .Pipeline }}
@@ -143,7 +143,7 @@ func NewHijackFailingBuild(target, prefix string, pipelineContentsWorker string,
 			Target:   target,
 			Pipeline: prefix + "hijack-failing-build",
 		}
-		timeout = 60 * time.Second
+		timeout = 120 * time.Second
 	)
 
 	return runnable.NewWithLogging("hijack-failing-build",
@@ -178,7 +178,7 @@ func NewRunExistingPipeline(target, prefix string, pipelineContentsWorker string
 			Target:   target,
 			Pipeline: prefix + "run-existing-pipeline",
 		}
-		timeout = 60 * time.Second
+		timeout = 120 * time.Second
 	)
 
 	return runnable.NewWithLogging("run-existing-pipeline",
@@ -200,7 +200,6 @@ func NewRunExistingPipeline(target, prefix string, pipelineContentsWorker string
 	echo "=========TARGET STATUS"
 	fly -t `+target+` status
 	echo "=========TARGET STATUS"
-	fly logout -a
 
 				`, config), os.Stderr),
 				timeout,
@@ -210,22 +209,21 @@ func NewRunExistingPipeline(target, prefix string, pipelineContentsWorker string
 }
 
 
-func NewAll(target []string, username string, password string, concourseUrl []string, prefix string, insecureTls bool, ldapAuth bool, ldapTeam string, workerpool []string, harbor_url string, logs string) runnable.Runnable {
+func NewAll(target string, username string, password string, concourseUrl string, prefix string, insecureTls bool, ldapAuth bool, ldapTeam string, workerpool string, harbor_url string, logs string) runnable.Runnable {
   if ldapAuth && len(ldapTeam) == 0 {
 			  // Assigning ldapTeam to a default team if none is given
     ldapTeam = "concourse-monitoring"
   }
-
-  var runable_output runnable.Runnable
-	firstRun := true
-	for i := range concourseUrl {
-    pipelineContentsWorker := `
+  //var runable_output runnable.Runnable
+	//firstRun := true
+	//for i := range concourseUrl {
+  pipelineContentsWorker := `
 resources:
 - name: time-trigger
   type: time
   source: {interval: 24h}
   tags:
-  - `+workerpool[i]+`
+  - `+workerpool+`
 jobs:
 - name: simple-job
   build_logs_to_retain: 20
@@ -242,7 +240,7 @@ jobs:
         path: echo
         args: ["Hello, world!"]
     tags:
-    - `+workerpool[i]+`
+    - `+workerpool+`
 - name: failing
   build_logs_to_retain: 20
   public: true
@@ -256,7 +254,7 @@ jobs:
       run:
         path: /bin/false
     tags:
-    - `+workerpool[i]+`
+    - `+workerpool+`
 - name: auto-triggering
   build_logs_to_retain: 20
   public: true
@@ -264,18 +262,16 @@ jobs:
   - get: time-trigger
     trigger: true
     tags:
-    - `+workerpool[i]+`
+    - `+workerpool+`
   - *say-hello
 `
-		runable_output = runnable.NewSequentially([]runnable.Runnable{
-			NewLogin(target[i], username, password, concourseUrl[i], insecureTls, ldapAuth, ldapTeam, workerpool[i]),
-			NewSync(target[i]),
-			runnable.NewConcurrently([]runnable.Runnable{
-				NewCreateAndRunNewPipeline(target[i], prefix, pipelineContentsWorker, workerpool[i], harbor_url, logs),
-				NewHijackFailingBuild(target[i], prefix, pipelineContentsWorker, logs),
-				NewRunExistingPipeline(target[i], prefix, pipelineContentsWorker, logs),
-			}),
-		})
-	}
-	return runable_output
+	return runnable.NewSequentially([]runnable.Runnable{
+		NewLogin(target, username, password, concourseUrl, insecureTls, ldapAuth, ldapTeam, workerpool,logs),
+		NewSync(target),
+		runnable.NewConcurrently([]runnable.Runnable{
+			NewCreateAndRunNewPipeline(target, prefix, pipelineContentsWorker, workerpool, harbor_url, logs),
+			NewHijackFailingBuild(target, prefix, pipelineContentsWorker, logs),
+			NewRunExistingPipeline(target, prefix, pipelineContentsWorker, logs),
+		}),
+	})
 }

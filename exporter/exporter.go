@@ -3,7 +3,7 @@ package exporter
 import (
 	"net"
 	"net/http"
-
+  "fmt"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -28,6 +28,9 @@ func (e *Exporter) Listen() (err error) {
 		err = errors.Wrapf(err,
 			"failed to listen on address %s", e.Address)
 		return
+	}else{
+    fmt.Println("Successfully connecting to Prometheus at port " + e.Address)
+
 	}
 
 	err = http.Serve(e.listener, nil)
@@ -36,8 +39,10 @@ func (e *Exporter) Listen() (err error) {
 			"failed listening on address %s",
 			e.Address)
 		return
+		fmt.Println("Failed to Listen on address " + e.Address )
+	}else{
+		fmt.Println("Listing on address: " + e.Address)
 	}
-
 	return
 }
 

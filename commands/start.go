@@ -38,26 +38,27 @@ func (c *startCommand) Execute(args []string) (err error) {
       logs = ""
 	}
 
-	singleConcourseUrl := strings.Split(c.ConcourseUrl, " ")
-	singleTarget := strings.Split(c.Target, " ")
-	singleWorkerPool := strings.Split(c.WorkerPool, " ")
-  fmt.Println(singleConcourseUrl)
+	//singleConcourseUrl := strings.Split(c.ConcourseUrl, " ")
+	//singleTarget := strings.Split(c.Target, " ")
+	//singleWorkerPool := strings.Split(c.WorkerPool, " ")
+	//counter := 0
+	//var stringCounter string
+  //fmt.Println(singleConcourseUrl)
 	//for i := range singleConcourseUrl {
 	var (
 		// Passing the variables from the struct above to the NewAll function in all.go
 		allProbes = probes.NewAll(
-			singleTarget,
+			c.Target,
 			c.Username,
 			c.Password,
-			singleConcourseUrl,
+			c.ConcourseUrl,
 			c.PipelinesPrefix,
 			c.InsecureTls,
 			c.LdapAuth,
 			c.LdapTeam,
-			singleWorkerPool,
+			c.WorkerPool,
 			c.Harbor_url,
 			logs,
-			//logs,
 		)
 		ticker = time.NewTicker(c.Interval)
 	)
@@ -84,7 +85,8 @@ func (c *startCommand) Execute(args []string) (err error) {
 	}()
 
 	allProbes.Run(ctx)
-
+	fmt.Println("Probes ")
+  fmt.Println(ctx)
 	for {
 		select {
 		case <-ticker.C:
@@ -94,4 +96,5 @@ func (c *startCommand) Execute(args []string) (err error) {
 			return
 		}
 	}
+	return
 }

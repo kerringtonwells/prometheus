@@ -3,7 +3,6 @@ package runnable
 import (
 	"context"
 	"time"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -29,6 +28,8 @@ func NewWithMetrics(probeName string, runnable Runnable) *WithMetrics {
 		name:     probeName,
 	}
 }
+
+
 
 func (r *WithMetrics) Run(ctx context.Context) (err error) {
 	start := time.Now()

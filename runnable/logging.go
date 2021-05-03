@@ -2,7 +2,6 @@ package runnable
 
 import (
 	"context"
-
 	"code.cloudfoundry.org/lager/lagerctx"
 )
 
